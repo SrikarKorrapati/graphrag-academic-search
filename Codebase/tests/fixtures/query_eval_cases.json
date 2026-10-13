@@ -1,0 +1,35 @@
+{
+  "schema_version": 1,
+  "description": "Input-output style eval cases for POST /query. 'expect' uses soft checks because LLM outputs are non-deterministic.",
+  "cases": [
+    {
+      "id": "topic-graph-nn",
+      "input": { "query": "papers on graph neural networks for citation graphs" },
+      "expect": {
+        "intent_one_of": ["find_by_topic", "exploratory", "find_papers", "comparative"],
+        "min_keywords": 1,
+        "min_papers": 1,
+        "answer_contains_any": ["graph", "paper", "citation", "network", "review"]
+      }
+    },
+    {
+      "id": "topic-transformers",
+      "input": { "query": "transformer attention mechanisms in natural language processing" },
+      "expect": {
+        "intent_one_of": ["find_by_topic", "exploratory", "find_papers"],
+        "min_keywords": 1,
+        "min_papers": 1
+      }
+    },
+    {
+      "id": "avoid-year-filter-trap",
+      "notes": "Queries with explicit recent years often yield 0 Qdrant hits when year payload is 0; this case expects at least parsed structure, not papers.",
+      "input": { "query": "papers about reinforcement learning published only in 2019" },
+      "expect": {
+        "intent_one_of": ["find_by_topic", "find_papers", "exploratory"],
+        "min_keywords": 1,
+        "min_papers": 0
+      }
+    }
+  ]
+}

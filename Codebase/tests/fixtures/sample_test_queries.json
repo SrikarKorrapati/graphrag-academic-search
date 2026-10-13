@@ -1,0 +1,170 @@
+{
+  "schema_version": 2,
+  "description": "20 POST /query strings grounded in live Neo4j sampling (papers, authors, Keyword nodes, venues, institutions, highly cited titles).",
+  "kg_exploration": {
+    "cyphers_run": [
+      "Counts and random samples: Paper nodes tagged via HAS_TOPIC to machine learning / deep learning / reinforcement learning / computer vision",
+      "Paper samples where Keyword text matches medicine, cancer, covid, or fixed labels Pathology/Oncology/Immunology",
+      "Keyword mention counts in mid band (80–800 papers) via Paper–HAS_TOPIC–Keyword",
+      "Authors with total paper counts between 8 and 25 (random order)",
+      "Venues with between 30 and 200 papers (random order)",
+      "Institutions with between 50 and 400 distinct affiliated authors (random order)",
+      "Highly cited Paper titles by counting incoming CITES relationships",
+      "Paper samples under materials/chemistry-related Keyword labels"
+    ],
+    "sample_paper_titles": [
+      "Deep diversification of an AAV capsid protein by machine learning",
+      "Improved protein structure prediction using predicted interresidue orientations",
+      "Privacy-Preserving Generative Deep Neural Networks Support Clinical Data Sharing",
+      "High-performance medicine: the convergence of human and artificial intelligence",
+      "Aerosol and Surface Stability of SARS-CoV-2 as Compared with SARS-CoV-1",
+      "Segment anything in medical images",
+      "The UK Biobank resource with deep phenotyping and genomic data",
+      "New tolerance factor to predict the stability of perovskite oxides and halides",
+      "Hydrogen production for energy: An overview"
+    ],
+    "sample_authors": [
+      "George M. Church",
+      "Karl Friston",
+      "Eric J. Topol",
+      "Jun Ma",
+      "Raquel Urtasun",
+      "Martin A. Green",
+      "Frank Neese",
+      "Danfeng Hong"
+    ],
+    "sample_keywords": [
+      "Federated learning",
+      "Biochemistry",
+      "Decision tree",
+      "Medical physics",
+      "Drug development",
+      "Beamforming",
+      "Economic growth",
+      "Environmental planning"
+    ],
+    "sample_venues": [
+      "npj Digital Medicine",
+      "Journal of the American Chemical Society",
+      "IEEE Transactions on Intelligent Transportation Systems",
+      "Bioinformatics",
+      "Journal of Hazardous Materials"
+    ],
+    "sample_institutions": [
+      "Vector Institute",
+      "Queen Mary University of London",
+      "Cardiff University",
+      "University of Cincinnati",
+      "Canadian Institute for Advanced Research"
+    ],
+    "sample_cited_titles": [
+      "Swin Transformer: Hierarchical Vision Transformer using Shifted Windows",
+      "MobileNetV2: Inverted Residuals and Linear Bottlenecks",
+      "CBAM: Convolutional Block Attention Module",
+      "Encoder-Decoder with Atrous Separable Convolution for Semantic Image Segmentation",
+      "Non-local Neural Networks"
+    ]
+  },
+  "queries": [
+    {
+      "id": "q01",
+      "query": "papers on federated learning and privacy-preserving deep learning for clinical data",
+      "grounded_in": ["Keyword:Federated learning", "title: Privacy-Preserving Generative Deep Neural Networks Support Clinical Data Sharing"]
+    },
+    {
+      "id": "q02",
+      "query": "machine learning algorithms for predicting opioid overdose risk among Medicare beneficiaries",
+      "grounded_in": ["title: Evaluation of Machine-Learning Algorithms for Predicting Opioid Overdose Risk Among Medicare Beneficiaries With Opioid Prescriptions"]
+    },
+    {
+      "id": "q03",
+      "query": "papers by Karl Friston on active inference or density dynamics",
+      "grounded_in": ["author:Karl Friston", "title: A tale of two densities: active inference is enactive inference"]
+    },
+    {
+      "id": "q04",
+      "query": "George M. Church and machine learning for AAV capsid engineering",
+      "grounded_in": ["author:George M. Church", "title: Deep diversification of an AAV capsid protein by machine learning"]
+    },
+    {
+      "id": "q05",
+      "query": "protein structure prediction with deep learning and predicted interresidue orientations",
+      "grounded_in": ["title: Improved protein structure prediction using predicted interresidue orientations"]
+    },
+    {
+      "id": "q06",
+      "query": "SARS-CoV-2 aerosol stability compared with SARS-CoV-1",
+      "grounded_in": ["title: Aerosol and Surface Stability of SARS-CoV-2 as Compared with SARS-CoV-1"]
+    },
+    {
+      "id": "q07",
+      "query": "segment anything models for medical imaging",
+      "grounded_in": ["title: Segment anything in medical images"]
+    },
+    {
+      "id": "q08",
+      "query": "UK Biobank deep phenotyping and genomic data resources",
+      "grounded_in": ["title: The UK Biobank resource with deep phenotyping and genomic data"]
+    },
+    {
+      "id": "q09",
+      "query": "perovskite oxide and halide stability using tolerance factors",
+      "grounded_in": ["title: New tolerance factor to predict the stability of perovskite oxides and halides"]
+    },
+    {
+      "id": "q10",
+      "query": "hydrogen production pathways for energy: reviews and overviews",
+      "grounded_in": ["title: Hydrogen production for energy: An overview"]
+    },
+    {
+      "id": "q11",
+      "query": "papers in npj Digital Medicine about artificial intelligence or clinical decision support",
+      "grounded_in": ["Venue:npj Digital Medicine", "Keyword overlap in slice"]
+    },
+    {
+      "id": "q12",
+      "query": "ORCA quantum chemistry software updates and computational chemistry workflows",
+      "grounded_in": ["title: Software update: The ORCA program system—Version 5.0", "author:Frank Neese"]
+    },
+    {
+      "id": "q13",
+      "query": "papers in Bioinformatics on protein language models or signal peptide prediction",
+      "grounded_in": ["Venue:Bioinformatics", "title: SignalP 6.0 predicts all five types of signal peptides using protein language models"]
+    },
+    {
+      "id": "q14",
+      "query": "IEEE Transactions on Intelligent Transportation Systems papers on traffic prediction or smart mobility",
+      "grounded_in": ["Venue:IEEE Transactions on Intelligent Transportation Systems"]
+    },
+    {
+      "id": "q15",
+      "query": "papers from authors affiliated with the Vector Institute on deep learning or computer vision",
+      "grounded_in": ["Institution:Vector Institute (101 affiliated authors in KG)"]
+    },
+    {
+      "id": "q16",
+      "query": "publications by Raquel Urtasun on autonomous driving or perception",
+      "grounded_in": ["author:Raquel Urtasun"]
+    },
+    {
+      "id": "q17",
+      "query": "papers from Queen Mary University of London on medical physics or imaging",
+      "grounded_in": ["Institution:Queen Mary University of London", "Keyword:Medical physics"]
+    },
+    {
+      "id": "q18",
+      "query": "papers citing Swin Transformer Hierarchical Vision Transformer using Shifted Windows",
+      "grounded_in": ["cited Paper title in KG"]
+    },
+    {
+      "id": "q19",
+      "query": "who cites MobileNetV2 Inverted Residuals and Linear Bottlenecks",
+      "grounded_in": ["cited Paper title in KG"]
+    },
+    {
+      "id": "q20",
+      "query": "biochemistry and drug development with decision tree or machine learning methods",
+      "grounded_in": ["Keyword:Biochemistry", "Keyword:Drug development", "Keyword:Decision tree"]
+    }
+  ]
+}
