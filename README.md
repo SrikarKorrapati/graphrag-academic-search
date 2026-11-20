@@ -3,10 +3,28 @@
 Hybrid GraphRAG API that combines:
 - **Knowledge Graph retrieval** from Neo4j
 - **Dense vector retrieval** from Qdrant
-- **Hybrid fusion + reranking**
+- **Reciprocal rank fusion (RRF)**
 - **LLM answer generation** via Groq / Gemini / Ollama
 
 The service exposes a FastAPI endpoint (`POST /query`) for academic paper search-style questions.
+
+## Final paper selection
+
+Graph retrieval and dense retrieval feed directly into reciprocal rank fusion:
+`KG + dense -> RRF -> top K -> context -> answer generation`.
+For each paper, RRF sums `1 / (60 + rank)` over the lists containing it; ranks
+start at 1 and a missing list contributes zero. Dense results from multiple
+sub-queries are merged by their best similarity score and sorted before fusion.
+
+`TOP_K_FINAL` (default 5) controls the final result count. There is no intermediate
+20-candidate cap and no separate ranking model. The selected papers retain their
+`rrf_score` and `source` (`kg`, `dense`, or `both`); the former `rerank_score`
+response field has been removed. LLMs still parse queries and generate answers.
+The `sentence-transformers` dependency is still used for local embeddings.
+
+Regression checks: install `pytest` alongside the application dependencies, then
+run `python -m pytest -q` from the repository root. These tests mock databases,
+embeddings, and LLM calls; no model downloads or live services are required.
 
 ## Tech Stack
 
@@ -14,7 +32,7 @@ The service exposes a FastAPI endpoint (`POST /query`) for academic paper search
 - **Knowledge Graph:** Neo4j
 - **Vector DB:** Qdrant
 - **Embeddings:** sentence-transformers (default), or OpenAI/Gemini
-- **Reranker:** cross-encoder (`ms-marco-MiniLM-L-6-v2`)
+- **Ranking:** reciprocal rank fusion (rank constant 60)
 - **LLMs:** Groq (default), Gemini, or Ollama
 - **Validation / config:** Pydantic + pydantic-settings
 
@@ -33,7 +51,7 @@ graphrag/
 │   ├── query_parser.py
 │   ├── kg_traversal.py         # Neo4j retrieval
 │   ├── dense_retrieval.py      # Qdrant retrieval + embedding
-│   ├── hybrid_fusion.py        # Merge + rerank KG + dense hits
+│   ├── hybrid_fusion.py        # Merge KG + dense hits; select top K by RRF
 │   └── llm_generator.py        # Final answer generation
 ├── scripts/
 │   ├── seed_neo4j.py           # Seed sample graph into Neo4j
@@ -96,11 +114,10 @@ QDRANT_HOST=localhost
 QDRANT_PORT=6333
 QDRANT_COLLECTION_NAME=academic_papers
 
-# Embedding + rerank
+# Embeddings and final result count
 EMBEDDING_PROVIDER=local
 EMBEDDING_MODEL=sentence-transformers/all-MiniLM-L6-v2
 EMBEDDING_DIMENSIONS=384
-RERANKER_MODEL=cross-encoder/ms-marco-MiniLM-L-6-v2
 TOP_K_FINAL=5
 
 # Optional
@@ -206,7 +223,7 @@ python3 scripts/eval_sample_queries_llm_judge.py
 FastAPI-based GraphRAG service that combines:
 - **Knowledge Graph retrieval** from **Neo4j**
 - **Dense vector retrieval** from **Qdrant**
-- **Hybrid fusion + reranking** for final paper ranking
+- **Reciprocal rank fusion (RRF)** for final paper ranking
 - **LLM answer generation** from fused context
 
 ## Tech Stack
@@ -217,7 +234,7 @@ FastAPI-based GraphRAG service that combines:
 - **Embeddings**:
   - Local `sentence-transformers` (default)
   - Optional OpenAI / Gemini embeddings
-- **Reranker**: `cross-encoder/ms-marco-MiniLM-L-6-v2`
+- **Ranking**: reciprocal rank fusion (rank constant 60)
 - **LLM providers**:
   - Groq (default in `.env`)
   - Ollama
@@ -285,7 +302,6 @@ QDRANT_COLLECTION_NAME=academic_papers
 EMBEDDING_PROVIDER=local
 EMBEDDING_MODEL=sentence-transformers/all-MiniLM-L6-v2
 EMBEDDING_DIMENSIONS=384
-RERANKER_MODEL=cross-encoder/ms-marco-MiniLM-L-6-v2
 TOP_K_FINAL=5
 ```
 
@@ -349,7 +365,7 @@ curl http://localhost:8000/health
 - Query flow (`POST /query`):
   1. Parse query (`query_parser`)
   2. Retrieve from KG (`kg_traversal`) and dense vectors (`dense_retrieval`) in parallel
-  3. Fuse + rerank (`hybrid_fusion`)
+  3. Fuse by paper ID and select `TOP_K_FINAL` results directly by RRF (`hybrid_fusion`)
   4. Aggregate context and generate final answer (`llm_generator`)
 
 If one backend is unavailable, the pipeline can continue with the other backend (unless both are down).

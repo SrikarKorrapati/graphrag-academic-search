@@ -5,7 +5,7 @@ Stages captured (aligned with main.py):
   - parsed_query (query_parser)
   - kg_traversal (KGTraversal.traverse)
   - dense_retrieval (DenseRetriever.retrieve)
-  - hybrid_fusion (HybridFusion.fuse_and_rerank)
+  - hybrid_fusion (HybridFusion.fuse)
   - final_output (ContextAggregator + LLMGenerator answer + fused papers)
 
 Usage (from graphrag/):
@@ -124,9 +124,6 @@ async def run_all(
     aggregator = ContextAggregator()
     generator = LLMGenerator()
 
-    if not fusion:
-        raise SystemExit("HybridFusion unavailable")
-
     for case in cases:
         qid = str(case.get("id", "unknown"))
         qtext = str(case.get("query", "")).strip()
@@ -162,8 +159,8 @@ async def run_all(
                 "error": dense_err,
             }
 
-            fused = await fusion.fuse_and_rerank(
-                qtext,
+            fused = await asyncio.to_thread(
+                fusion.fuse,
                 kg_results,
                 dense_results,
                 top_k=settings.top_k_final,

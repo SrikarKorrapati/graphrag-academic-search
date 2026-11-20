@@ -217,7 +217,7 @@ class DenseRetriever:
         return out
 
     async def retrieve(self, parsed_query: ParsedQuery) -> list[DenseResult]:
-        """Embed decomposed sub-queries (or one joint string) and merge hits."""
+        """Merge sub-query hits by best score and return them best-first for RRF."""
         try:
             texts = (
                 [self._search_text(parsed_query, s) for s in parsed_query.sub_queries]
@@ -229,7 +229,7 @@ class DenseRetriever:
                 for r in await self._search_one(t, parsed_query):
                     if r.id not in seen or r.score > seen[r.id].score:
                         seen[r.id] = r
-            return list(seen.values())
+            return sorted(seen.values(), key=lambda result: result.score, reverse=True)
         except Exception as exc:
             logger.exception("Dense retrieval failed: %s", exc)
             raise RuntimeError(f"Dense retrieval failed: {exc}") from exc

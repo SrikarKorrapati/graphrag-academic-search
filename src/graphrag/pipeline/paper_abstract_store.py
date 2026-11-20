@@ -1,4 +1,4 @@
-"""Lazy in-memory map paper_id -> abstract from papers.jsonl for fusion / reranking."""
+"""Lazy in-memory map paper_id -> abstract for selected results and traces."""
 
 from __future__ import annotations
 

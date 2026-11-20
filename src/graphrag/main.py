@@ -34,8 +34,8 @@ from pipeline.kg_traversal import KGTraversal
 from pipeline.paper_abstract_store import abstract_for_paper
 from pipeline.llm_generator import LLMGenerator
 from pipeline.query_parser import QueryParser
-from query_logs.pipeline_trace import append_pipeline_stage, write_sample_formatted_for_request
-from query_logs.writer import append_query_log, build_log_record
+from observability.pipeline_trace import append_pipeline_stage, write_sample_formatted_for_request
+from observability.writer import append_query_log, build_log_record
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
@@ -64,7 +64,7 @@ class AppState:
     neo4j_driver: Any = None
     qdrant: AsyncQdrantClient | None = None
     parser = QueryParser()
-    fusion: HybridFusion | None = None
+    fusion = HybridFusion()
     aggregator = ContextAggregator()
     generator = LLMGenerator()
     kg: KGTraversal | None = None
@@ -95,11 +95,6 @@ async def lifespan(app: FastAPI):
         state.qdrant = None
     state.kg = KGTraversal(state.neo4j_driver) if state.neo4j_driver else None
     state.dense = DenseRetriever(state.qdrant) if state.qdrant else None
-    try:
-        state.fusion = HybridFusion()
-    except Exception as exc:
-        logger.error("HybridFusion init failed: %s", exc)
-        state.fusion = None
     yield
     if state.qdrant:
         await state.qdrant.close()
@@ -155,8 +150,6 @@ async def query_endpoint(req: QueryRequest) -> QueryResponse:
     t0 = time.perf_counter()
     trace_on = _trace_enabled()
     request_id = str(uuid.uuid4())
-    if not state.fusion:
-        raise HTTPException(status_code=503, detail="Reranker stack unavailable")
     if not state.kg and not state.dense:
         raise HTTPException(
             status_code=503,
@@ -210,10 +203,10 @@ async def query_endpoint(req: QueryRequest) -> QueryResponse:
                 output={"n_hits": len(dense_results), "hits": _dump_dense(dense_results)},
             )
 
-        fused = await state.fusion.fuse_and_rerank(
-            req.query, kg_results, dense_results, top_k=settings.top_k_final
+        fused = await asyncio.to_thread(
+            state.fusion.fuse, kg_results, dense_results, top_k=settings.top_k_final
         )
-        logger.info("Top rerank scores=%s", [f.rerank_score for f in fused[:5]])
+        logger.info("Top RRF scores=%s", [f.rrf_score for f in fused[:5]])
         if trace_on:
             await asyncio.to_thread(
                 append_pipeline_stage,

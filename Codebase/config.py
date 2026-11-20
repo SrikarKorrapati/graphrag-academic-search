@@ -31,7 +31,7 @@ class Settings(BaseSettings):
     qdrant_port: int = 6333
     qdrant_collection_name: str = "academic_papers"
 
-    # Used to enrich KG rows with abstracts before cross-encoder (path relative to graphrag/).
+    # Used to enrich selected KG results with abstracts for answer generation.
     papers_jsonl_path: str = "json/papers.jsonl"
 
     embedding_provider: str = "local"
@@ -40,7 +40,6 @@ class Settings(BaseSettings):
     embedding_batch_size: int = 64
     # Empty = auto (e.g. MPS/CUDA if available). Set to "cpu" to force CPU for local ST.
     embedding_device: str = ""
-    reranker_model: str = "cross-encoder/ms-marco-MiniLM-L-6-v2"
     top_k_final: int = 5
 
     # Append per-stage JSON lines to query_logs/pipeline_trace.jsonl on each POST /query.

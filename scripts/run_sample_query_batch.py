@@ -5,7 +5,7 @@ Stages captured (aligned with query_logs/sample_query_runs/q01.json):
   - parsed_query (query_parser)
   - kg_traversal (KGTraversal.traverse)
   - dense_retrieval (DenseRetriever.retrieve)
-  - hybrid_fusion (HybridFusion.fuse_and_rerank)
+  - hybrid_fusion (HybridFusion.fuse)
   - final_output (ContextAggregator + LLMGenerator)
 
 Usage (from graphrag/):
@@ -143,8 +143,8 @@ async def _run_one(
     fused: list[FusedResult] = []
     fusion_err: str | None = None
     try:
-        fused = await fusion.fuse_and_rerank(
-            user_query, kg_results, dense_results, top_k=settings.top_k_final
+        fused = await asyncio.to_thread(
+            fusion.fuse, kg_results, dense_results, top_k=settings.top_k_final
         )
     except Exception as exc:
         fusion_err = str(exc)
@@ -244,11 +244,7 @@ async def _async_main(args: argparse.Namespace) -> int:
     kg = KGTraversal(neo4j_driver) if neo4j_driver else None
     dense = DenseRetriever(qdrant) if qdrant else None
 
-    try:
-        fusion = HybridFusion()
-    except Exception as exc:
-        logger.error("HybridFusion init failed: %s", exc)
-        return 1
+    fusion = HybridFusion()
 
     parser = QueryParser()
     aggregator = ContextAggregator()

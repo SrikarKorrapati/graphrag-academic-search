@@ -115,10 +115,7 @@ async def run_all(
 
         kg = KGTraversal(neo4j_driver) if neo4j_driver else None
         dense = DenseRetriever(qdrant) if qdrant else None
-        try:
-            fusion = HybridFusion()
-        except Exception as exc:
-            raise RuntimeError(f"HybridFusion init failed: {exc}") from exc
+        fusion = HybridFusion()
         parser = QueryParser()
         aggregator = ContextAggregator()
         generator = LLMGenerator()
@@ -147,8 +144,8 @@ async def run_all(
             kg_rows, kg_err = await _safe_kg(kg, parsed)
             dense_rows, dense_err = await _safe_dense(dense, parsed)
 
-            fused = await fusion.fuse_and_rerank(
-                qtext,
+            fused = await asyncio.to_thread(
+                fusion.fuse,
                 kg_rows,
                 dense_rows,
                 top_k=settings.top_k_final,

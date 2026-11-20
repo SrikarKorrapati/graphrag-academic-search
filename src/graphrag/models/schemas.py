@@ -59,13 +59,12 @@ class DenseResult(BaseModel):
 
 
 class FusedResult(BaseModel):
-    """Hybrid retrieval output after RRF and cross-encoder reranking."""
+    """Final retrieval result selected by reciprocal rank fusion."""
 
     id: str
     text: str
     metadata: dict
     rrf_score: float
-    rerank_score: float
     source: str
 
 
